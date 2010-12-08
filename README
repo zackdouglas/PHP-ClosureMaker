@@ -1,0 +1,52 @@
+ClosureMaker enables the use of PHP 5.3-like closures in prior PHP versions.
+A nice little tool for those of us who don't have the option to upgrade
+to PHP 5.3 any time soon.
+ 
+Usage:
+=====
+Below is an example code:
+ 
+//Declare some variables
+$a = 5;
+$b = array('foo' => 'bar');
+ 
+//Create the lambda function. Notice the following:
+//   1) ClosureMaker uses a PHP 5.3 style of declaring the function
+//   2) The magic $_ can be used inside your code to access variables
+//      in the 'environment' of the closure
+//   3) We pass get_defined_vars() to the closure. This gives us access to
+//      a snapshot of the current set of declared variables inside the closure
+$lambda = ClosureMaker::create(
+ <<<PHP
+ function (\$x, \$y) {
+    if (\$x == \$y) {
+        return \$x;
+    }
+    var_dump(\$_['b']);
+    return \$_['a'];
+}
+PHP
+, get_defined_vars());
+ 
+//Here we redeclare $a and $b for good measure
+$a = 4;
+$b = null;
+ 
+echo "\nTest1\n";
+var_dump($lambda(3, 3));
+echo "\nTest2\n";
+var_dump($lambda(4, 1));
+ 
+As expected, this outputs:
+Test1
+int(3)
+ 
+Test2
+array(1) {
+ ["foo"]=>
+ string(3) "bar"
+}
+int(5)
+ 
+Notice how test two gives us back the values of $a and $b at the time the
+closure was created.
